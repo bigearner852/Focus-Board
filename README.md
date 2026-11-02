@@ -2,7 +2,10 @@
 
 A lightweight personal task and study dashboard for planning a focused day. Add tasks, set priorities and due dates, filter what matters, and watch your completion progress — all in a single page with no account required.
 
+**Live demo:** <https://bigearner852.github.io/Focus-Board/>
+
 ![FocusBoard CI](https://github.com/bigearner852/Focus-Board/actions/workflows/ci.yml/badge.svg)
+![Deploy to GitHub Pages](https://github.com/bigearner852/Focus-Board/actions/workflows/pages.yml/badge.svg)
 
 ## Overview
 
@@ -116,9 +119,8 @@ npx playwright install --with-deps chromium
 
 ## Demo
 
-A hosted demo is not live yet because GitHub Pages is not enabled for this
-repository; see [Production build and deployment](#production-build-and-deployment)
-for the one-time setup. To run the app locally:
+Try the hosted build at **<https://bigearner852.github.io/Focus-Board/>**, or
+run it locally:
 
 ```bash
 npm install
@@ -174,15 +176,11 @@ Pushes to `main` run `.github/workflows/pages.yml`, which builds with
 Local builds default to a relative base so `dist/` also works from any static
 subdirectory.
 
-GitHub Pages must be enabled once before the deploy job can publish:
-
-1. Open **Settings → Pages** in the repository.
-2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-3. Re-run the latest **Deploy to GitHub Pages** workflow, or push to `main`.
-
-The expected URL is <https://bigearner852.github.io/Focus-Board/>. It was not
-live at the time of the v0.1.0 verification because the available GitHub token
-could not create the Pages site.
+The workflow publishes to <https://bigearner852.github.io/Focus-Board/> whenever
+`main` changes, and can also be started manually from the Actions tab. Pages is
+configured with **Source: GitHub Actions**, so no build output is committed.
+Every push runs the type-check, unit suite, browser suite, and production build
+before the deploy job starts.
 
 ## Screenshots
 
@@ -229,7 +227,6 @@ Current versions of Chrome, Edge, Firefox, and Safari. The app relies on modern 
 - No due-date reminders or notifications.
 - Search covers task titles only, as specified.
 - Browser tests run in Chromium; other browsers are supported by the standards used but are not part of automated CI.
-- The GitHub Pages deploy workflow is committed and the base path is verified locally, but the hosted demo awaits a repository admin enabling Pages.
 
 ## License
 
