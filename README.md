@@ -179,8 +179,8 @@ subdirectory.
 The workflow publishes to <https://bigearner852.github.io/Focus-Board/> whenever
 `main` changes, and can also be started manually from the Actions tab. Pages is
 configured with **Source: GitHub Actions**, so no build output is committed.
-Every push runs the type-check, unit suite, browser suite, and production build
-before the deploy job starts.
+The Pages workflow type-checks, runs the unit suite, and builds before
+deploying; the CI workflow runs the browser suite on the same push.
 
 ## Screenshots
 
