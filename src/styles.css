@@ -734,13 +734,6 @@ textarea {
   gap: 0.1rem;
   justify-self: start;
   margin-left: -0.35rem;
-  opacity: 0.72;
-  transition: opacity 140ms ease;
-}
-
-.task:hover .task-actions,
-.task:focus-within .task-actions {
-  opacity: 1;
 }
 
 .task-action {
@@ -771,14 +764,8 @@ textarea {
   text-decoration-thickness: 1px;
 }
 
-.task.is-complete .task-description,
-.task.is-complete .task-meta {
-  opacity: 0.7;
-}
-
-.task.is-complete .task-title,
 .task.is-complete .task-description {
-  opacity: 0.8;
+  color: var(--text-muted);
 }
 
 /* ---------- Empty state ---------- */
@@ -945,12 +932,6 @@ kbd {
 
 /* ---------- Responsive ---------- */
 
-@media (hover: none) {
-  .task-actions {
-    opacity: 1;
-  }
-}
-
 @media (min-width: 700px) {
   .app {
     padding: 1.8rem 0 2.5rem;
@@ -1044,7 +1025,6 @@ kbd {
     justify-self: end;
     margin-left: 0;
     margin-top: 0.02rem;
-    opacity: 0.55;
   }
 
   .task-title {
@@ -1070,11 +1050,13 @@ kbd {
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 520px) {
   .brand-tagline {
     display: none;
   }
+}
 
+@media (max-width: 380px) {
   .header-actions {
     gap: 0.35rem;
   }

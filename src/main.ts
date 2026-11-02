@@ -66,6 +66,7 @@ const dueDateInput = byId<HTMLInputElement>("task-due");
 
 let tasks: Task[] = loadTasks();
 let editingId: string | null = null;
+let dialogTrigger: HTMLElement | null = null;
 
 const filters: TaskFilters = {
   status: "all",
@@ -282,7 +283,15 @@ function readDraft(): TaskDraft {
   };
 }
 
-function openTaskDialog(task: Task | null): void {
+function resolveDialogTrigger(trigger?: HTMLElement): HTMLElement {
+  if (trigger?.isConnected) return trigger;
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active !== document.body) return active;
+  return newTaskButton;
+}
+
+function openTaskDialog(task: Task | null, trigger?: HTMLElement): void {
+  dialogTrigger = resolveDialogTrigger(trigger);
   editingId = task ? task.id : null;
   taskForm.reset();
   clearErrors();
@@ -310,12 +319,23 @@ function findTask(id: string): Task | undefined {
   return tasks.find((task) => task.id === id);
 }
 
-newTaskButton.addEventListener("click", () => openTaskDialog(null));
+newTaskButton.addEventListener("click", () => openTaskDialog(null, newTaskButton));
 dialogClose.addEventListener("click", closeTaskDialog);
 dialogCancel.addEventListener("click", closeTaskDialog);
 
 dialog.addEventListener("close", () => {
   editingId = null;
+  const trigger = dialogTrigger;
+  dialogTrigger = null;
+
+  // Native <dialog> restores focus only when the trigger is still connected and
+  // visible. After edits the row is re-rendered, and after adding a first task
+  // the empty-state button is hidden, so choose a safe fallback explicitly.
+  if (trigger && trigger.isConnected && trigger.getClientRects().length > 0) {
+    trigger.focus();
+    return;
+  }
+  newTaskButton.focus();
 });
 
 dueDateInput.addEventListener("input", () => {
@@ -372,7 +392,7 @@ taskList.addEventListener("click", (event) => {
   if (!task) return;
 
   if (button.dataset.action === "edit") {
-    openTaskDialog(task);
+    openTaskDialog(task, button);
     return;
   }
 
@@ -398,7 +418,7 @@ emptyAction.addEventListener("click", () => {
     searchInput.focus();
     return;
   }
-  openTaskDialog(null);
+  openTaskDialog(null, emptyAction);
 });
 
 searchInput.addEventListener("input", () => {
