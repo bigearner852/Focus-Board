@@ -1,7 +1,7 @@
 {
   "name": "focusboard",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A lightweight personal task and study dashboard with local persistence.",
   "type": "module",
   "scripts": {
@@ -10,9 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "screenshots": "playwright test tests/e2e/screenshots.spec.ts",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
     "typescript": "^5.7.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
