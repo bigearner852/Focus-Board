@@ -2,7 +2,10 @@
 
 A lightweight personal task and study dashboard for planning a focused day. Add tasks, set priorities and due dates, filter what matters, and watch your completion progress — all in a single page with no account required.
 
+**Live demo:** <https://bigearner852.github.io/Focus-Board/>
+
 ![FocusBoard CI](https://github.com/bigearner852/Focus-Board/actions/workflows/ci.yml/badge.svg)
+![Deploy to GitHub Pages](https://github.com/bigearner852/Focus-Board/actions/workflows/pages.yml/badge.svg)
 
 ## Overview
 
@@ -34,7 +37,7 @@ The interface is mobile-first and built around a quiet, paper-like palette with 
 | Application | TypeScript, compiled by Vite |
 | Build tool | Vite |
 | Storage | Browser `localStorage` |
-| Tests | Vitest |
+| Tests | Vitest (unit) and Playwright (browser) |
 | Backend | None |
 | Paid services | None |
 
@@ -42,7 +45,10 @@ The interface is mobile-first and built around a quiet, paper-like palette with 
 
 ```text
 .
-├── .github/workflows/ci.yml   # install, type-check, test, build
+├── .github/workflows/
+│   ├── ci.yml                 # type-check, unit tests, browser tests, build
+│   └── pages.yml              # build and deploy to GitHub Pages
+├── docs/screenshots/          # actual desktop and mobile captures
 ├── index.html                 # semantic app shell and task dialog
 ├── src/
 │   ├── main.ts                # DOM rendering and event wiring
@@ -52,10 +58,17 @@ The interface is mobile-first and built around a quiet, paper-like palette with 
 │   ├── styles.css             # responsive light/dark theme
 │   ├── tasks.test.ts          # task operation tests
 │   └── storage.test.ts        # persistence and corruption tests
+├── tests/e2e/
+│   ├── app.spec.ts            # core user flows and persistence
+│   ├── accessibility.spec.ts  # axe scans
+│   ├── responsive.spec.ts     # 390 / 768 / 1440 px layouts
+│   ├── screenshots.spec.ts    # deterministic screenshot capture
+│   └── helpers.ts
 ├── LICENSE
+├── playwright.config.ts       # production-preview browser tests
 ├── README.md
 ├── tsconfig.json              # strict TypeScript
-└── vite.config.ts             # relative build base + Vitest config
+└── vite.config.ts             # Pages base path + Vitest config
 ```
 
 The split is intentional: `tasks.ts` contains no DOM or storage access, which keeps the business rules easy to test; `storage.ts` isolates all browser persistence; `main.ts` owns rendering and events.
@@ -84,10 +97,18 @@ Vite prints a local URL (by default `http://localhost:5173`). Open it in a brows
 | --- | --- |
 | `npm run dev` | Start the development server with hot reload. |
 | `npm run typecheck` | Run `tsc --noEmit` with strict settings. |
-| `npm test` | Run the Vitest suite once. |
-| `npm run test:watch` | Run tests in watch mode. |
+| `npm test` | Run the Vitest unit suite once. |
+| `npm run test:watch` | Run unit tests in watch mode. |
+| `npm run test:e2e` | Build, serve, and run the Playwright suite in Chromium. |
+| `npm run screenshots` | Regenerate the README screenshots from seeded data. |
 | `npm run build` | Type-check, then produce a production build in `dist/`. |
 | `npm run preview` | Serve the production build locally. |
+
+Browser tests need Chromium once per machine:
+
+```bash
+npx playwright install --with-deps chromium
+```
 
 ## Data and privacy
 
@@ -96,13 +117,26 @@ Vite prints a local URL (by default `http://localhost:5173`). Open it in a brows
 - If storage is blocked or full, changes remain usable for the session and the app announces that they could not be saved.
 - On load, stored data is validated field by field. Malformed JSON, non-array payloads, duplicate IDs, invalid priorities, and impossible dates are discarded or repaired rather than crashing the app.
 
+## Demo
+
+Try the hosted build at **<https://bigearner852.github.io/Focus-Board/>**, or run it locally:
+
+```bash
+npm install
+npm run dev
+```
+
+The app starts empty. Add a task with the **New task** button (or press `N`), then try the status and priority filters, title search, theme toggle, and reload the page to confirm your data is still there.
+
 ## Testing
+
+### Unit tests
 
 ```bash
 npm test
 ```
 
-The suite covers:
+The 33 Vitest tests cover:
 
 - draft validation (empty/long titles, bad priorities, impossible dates)
 - task creation, updates, toggling, and removal
@@ -112,44 +146,60 @@ The suite covers:
 - persistence round-trips and theme storage
 - corrupted JSON, malformed entries, duplicate IDs, and throwing storage implementations
 
-## Production build
+### Browser tests
+
+```bash
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+The 20 Playwright tests run against the production preview and cover:
+
+- add, validate, edit, delete, complete, and reopen flows
+- status/priority filters, title search, and overdue labels
+- theme switching and persistence after reload
+- `N` and `Escape` keyboard behavior, including focus restoration
+- task persistence after a full page reload and delete confirmation
+- 390px, 768px, and 1440px layouts with horizontal-overflow checks
+- axe accessibility scans of the board and the task dialog
+
+## Production build and deployment
 
 ```bash
 npm run build
 npm run preview
 ```
 
-The build uses a relative base, so `dist/` can be hosted from any static path. For GitHub Pages, publish the contents of `dist/` with your preferred static-hosting workflow.
+Pushes to `main` run `.github/workflows/pages.yml`, which builds with
+`VITE_BASE_PATH=/Focus-Board/`, uploads `dist/`, and deploys to GitHub Pages.
+Local builds default to a relative base so `dist/` also works from any static
+subdirectory.
 
 ## Screenshots
 
-No screenshot assets are committed yet, so this section documents how to add them rather than linking to missing files.
+All screenshots below are real captures of the production build, generated by
+`npm run screenshots` at 1440×900 (desktop) and 390×844 (mobile).
 
-1. Run `npm run dev` and open the app.
-2. Load a few sample tasks (different priorities, one completed, one overdue).
-3. Capture:
-   - desktop light theme at roughly 1440×900,
-   - desktop dark theme,
-   - mobile light theme at roughly 390×844.
-4. Save the files to `docs/screenshots/` using names such as `desktop-light.png`, `desktop-dark.png`, and `mobile-light.png`.
-5. Add them to this README:
-
-```md
-| Desktop (light) | Desktop (dark) |
+| Desktop — light | Desktop — dark |
 | --- | --- |
-| ![Desktop light](docs/screenshots/desktop-light.png) | ![Desktop dark](docs/screenshots/desktop-dark.png) |
+| ![FocusBoard desktop light](docs/screenshots/desktop-light.png) | ![FocusBoard desktop dark](docs/screenshots/desktop-dark.png) |
 
-![Mobile](docs/screenshots/mobile-light.png)
-```
+![FocusBoard mobile light](docs/screenshots/mobile-light.png)
+
+To refresh them after a UI change, run `npm run screenshots`; the Playwright
+spec seeds the sample tasks and writes the three PNGs into
+`docs/screenshots/`.
 
 ## Accessibility
 
 - Semantic landmarks (`header`, `main`, `footer`, `section`), a skip link, and one `h1`.
 - All form controls have associated labels; validation errors are connected with `aria-describedby` and announced via a live region.
 - The task dialog is a native `<dialog>` with a labelled heading and Escape-to-close behaviour.
+- Closing the dialog returns focus to the control that opened it, with a safe fallback if that control no longer exists.
 - Custom checkboxes retain native keyboard behaviour and expose descriptive labels.
-- Focus is never removed visually; edit/delete actions appear on hover but remain reachable by keyboard.
+- Focus is never removed visually, and edit/delete actions remain reachable by keyboard on every viewport.
 - Theme contrast and touch targets are sized for small screens; the layout respects reduced-motion preferences.
+- Automated axe scans of the board and the dialog are part of the Playwright suite and must report no serious or critical issues.
 
 ## Keyboard shortcuts
 
@@ -157,7 +207,7 @@ No screenshot assets are committed yet, so this section documents how to add the
 | --- | --- |
 | `N` | Open the new-task dialog when focus is not inside a form control. |
 | `Tab` / `Shift+Tab` | Move through toolbar, tasks, and dialog controls. |
-| `Escape` | Close the task dialog. |
+| `Escape` | Close the task dialog and return focus to its trigger. |
 | `Enter` / `Space` | Toggle a focused task checkbox or activate a button. |
 
 ## Browser support
@@ -169,7 +219,7 @@ Current versions of Chrome, Edge, Firefox, and Safari. The app relies on modern 
 - Data is per browser profile and device; there is no sync, export, or import.
 - No due-date reminders or notifications.
 - Search covers task titles only, as specified.
-- No screenshot assets are included in the repository yet.
+- Browser tests run in Chromium; other browsers are supported by the standards used but are not part of automated CI.
 
 ## License
 
